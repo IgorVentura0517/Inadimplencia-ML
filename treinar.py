@@ -23,19 +23,13 @@ from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import OneHotEncoder, StandardScaler
 from sklearn.tree import DecisionTreeClassifier
 
-from config import DADOS, MODELOS, SEMENTE
+from config import DADOS, MODELOS, PROBLEMAS, SEMENTE
 
-FEATURES_NUMERICAS = [
-    "idade",
-    "renda_mensal",
-    "tempo_emprego_anos",
-    "score_credito",
-    "dividas_ativas",
-    "prazo_meses",
-    "valor_emprestimo",
-]
-FEATURES_CATEGORICAS = ["possui_imovel", "finalidade"]
-ALVO = "inadimplente"
+PROBLEMA = PROBLEMAS["credito"]
+FEATURES = PROBLEMA["features"]
+FEATURES_NUMERICAS = [f for f in FEATURES if FEATURES[f]["tipo"] == "numero"]
+FEATURES_CATEGORICAS = [f for f in FEATURES if FEATURES[f]["tipo"] == "categoria"]
+ALVO = PROBLEMA["alvo"]
 
 
 def candidatos():
@@ -61,8 +55,8 @@ def criar_pipeline(modelo):
 
 
 def dividir():
-    df = pd.read_csv(DADOS / "credito.csv")
-    X = df[FEATURES_NUMERICAS + FEATURES_CATEGORICAS]  # id e alvo ficam de fora
+    df = pd.read_csv(DADOS / PROBLEMA["arquivo"])
+    X = df[list(FEATURES)]  # id e alvo ficam de fora
     y = df[ALVO]
     return train_test_split(X, y, test_size=0.20, stratify=y, random_state=SEMENTE)
 

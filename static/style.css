@@ -1,0 +1,28 @@
+:root { --fundo: #f4f5f8; --cartao: #fff; --texto: #1d2330; --suave: #5b6475; --borda: #e1e4ea; --cor: #3b5bdb; --ruim: #c92a2a; --bom: #2b8a3e; }
+@media (prefers-color-scheme: dark) {
+  :root { --fundo: #12151c; --cartao: #1b1f29; --texto: #e6e9ef; --suave: #9aa3b5; --borda: #2c3240; --cor: #748ffc; --ruim: #ff8787; --bom: #69db7c; }
+}
+* { box-sizing: border-box; }
+body { margin: 0; font-family: system-ui, sans-serif; background: var(--fundo); color: var(--texto); }
+header { background: #1d2330; color: #fff; padding: 28px 16px; }
+header h1 { margin: 0 0 6px; font-size: 1.7rem; }
+header p { margin: 0; opacity: .8; }
+main { max-width: 1100px; margin: 0 auto; padding: 20px 16px; }
+nav button { border: 1px solid var(--borda); background: var(--cartao); color: var(--texto); padding: 9px 16px; border-radius: 99px; font: inherit; font-weight: 600; cursor: pointer; margin: 0 6px 16px 0; }
+nav button.ativo { background: var(--cor); border-color: var(--cor); color: #fff; }
+.grade { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; align-items: start; }
+@media (max-width: 800px) { .grade { grid-template-columns: 1fr; } }
+section { background: var(--cartao); border: 1px solid var(--borda); border-radius: 12px; padding: 18px; margin-bottom: 18px; }
+h2 { margin: 0 0 14px; font-size: 1.05rem; }
+form { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+label { font-size: .85rem; font-weight: 600; }
+input, select { width: 100%; margin-top: 4px; padding: 8px; border: 1px solid var(--borda); border-radius: 8px; background: var(--fundo); color: var(--texto); font: inherit; }
+form button { grid-column: 1 / -1; background: var(--cor); color: #fff; border: 0; border-radius: 8px; padding: 11px; font: inherit; font-weight: 600; cursor: pointer; }
+.valor { font-size: 2.2rem; font-weight: 700; margin: 4px 0; }
+.barra { height: 10px; background: var(--borda); border-radius: 99px; overflow: hidden; }
+.barra span { display: block; height: 100%; background: var(--cor); }
+.suave { color: var(--suave); font-size: .85rem; }
+table { width: 100%; border-collapse: collapse; font-size: .9rem; }
+td { padding: 7px 4px; border-bottom: 1px solid var(--borda); }
+td:last-child { text-align: right; }
+.escolhido { font-weight: 700; color: var(--cor); }
