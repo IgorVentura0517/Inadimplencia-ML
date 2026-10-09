@@ -70,12 +70,14 @@ async function prever(evento) {
   let html = `<div class="suave">${p.resultado}</div>`;
   if (!resposta.ok) html = `<p style="color: var(--ruim)">${r.erro}</p>`;
   else {
-    const risco = r.probabilidade >= 0.5;
+    const risco = r.classificacao === "inadimplente";
     const cor = risco ? "var(--ruim)" : "var(--bom)";
+
     html += `<div class="valor" style="color:${cor}">${pct(r.probabilidade)}</div>
       <div class="barra"><span style="width:${r.probabilidade * 100}%"></span></div>
-      <p style="color:${cor}"><b>${risco ? "Previsto: inadimplente" : "Previsto: adimplente"}</b></p>`;
-  }
+      <p style="color:${cor}"><b>${risco ? "Previsto: inadimplente" : "Previsto: adimplente"}</b></p>
+      <p class="suave">Limiar de decisão: ${pct(r.limiar_decisao)}</p>`;
+}
   document.getElementById("resultado").innerHTML = html;
 }
 

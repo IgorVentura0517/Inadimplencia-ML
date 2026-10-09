@@ -56,6 +56,7 @@ def problemas():
 
 
 @app.post("/api/prever/<nome>")
+
 def prever(nome):
     if nome not in PROBLEMAS:
         return jsonify(erro="Problema não encontrado"), 404
@@ -66,7 +67,21 @@ def prever(nome):
     X = pd.DataFrame([linha], columns=list(problema["features"])).astype(
         {c: float for c, r in problema["features"].items() if r["tipo"] == "numero"})
     modelo = MODELOS_CARREGADOS[nome]
-    return jsonify(probabilidade=float(modelo.predict_proba(X)[0, 1]))
+    probabilidade = float(modelo.predict_proba(X)[0, 1])
+    limiar = problema.get("limiar_decisao", 0.5)
+
+    classificacao = (
+        "inadimplente"
+        if probabilidade >= limiar
+        else "adimplente"
+    )
+
+    
+    return jsonify(
+    probabilidade=probabilidade,
+    limiar_decisao=limiar,
+    classificacao=classificacao
+)
 
 
 if __name__ == "__main__":

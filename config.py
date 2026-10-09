@@ -21,6 +21,7 @@ PROBLEMAS = {
         "tipo": "classificacao",
         "arquivo": "credito.csv",
         "alvo": "inadimplente",
+        "limiar_decisao": 0.16,
         "resultado": "Probabilidade de inadimplência",
         "features": {
             "idade": num(40, 18, 80),
