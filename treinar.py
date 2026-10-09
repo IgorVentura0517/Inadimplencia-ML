@@ -63,9 +63,11 @@ def dividir():
 
 def avaliar(modelo, X_teste, y_teste):
     prob = modelo.predict_proba(X_teste)[:, 1]
-    prev = (prob >= 0.5).astype(int)
+    limiar = PROBLEMA["limiar_decisao"]
+    prev = (prob >= limiar).astype(int)
     precisao, revocacao, _ = precision_recall_curve(y_teste, prob)
     return {
+        "limiar_decisao": limiar,
         "acuracia": accuracy_score(y_teste, prev),
         "precisao": precision_score(y_teste, prev),
         "recall": recall_score(y_teste, prev),
