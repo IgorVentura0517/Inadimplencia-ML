@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Previsão de Inadimplência</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+<header>
+  <h1>Previsão de Inadimplência</h1>
+  <p>Modelo treinado com scikit-learn e servido por uma API Flask.</p>
+</header>
+<main>
+  <nav id="abas"></nav>
+  <div class="grade">
+    <section>
+      <h2>Dados do cliente e do contrato</h2>
+      <form id="formulario"></form>
+    </section>
+    <div>
+      <section><h2>Previsão</h2><div id="resultado" class="suave">Preencha os dados e clique em Prever.</div></section>
+      <section><h2>Avaliação do modelo</h2><div id="metricas"></div></section>
+    </div>
+  </div>
+</main>
+<script>
+let problemas = {}, atual = null;
+const fmt = (v, casas = 3) => v.toLocaleString("pt-BR", { maximumFractionDigits: casas });
+const pct = (v) => fmt(v * 100, 1) + "%";
+
+async function iniciar() {
+  problemas = await (await fetch("/api/problemas")).json();
+  const abas = document.getElementById("abas");
+  for (const nome in problemas) {
+    const botao = document.createElement("button");
+    botao.textContent = problemas[nome].titulo;
+    botao.onclick = () => selecionar(nome);
+    abas.appendChild(botao);
+  }
+  selecionar(Object.keys(problemas)[0]);
+}
+
+function selecionar(nome) {
+  atual = nome;
+  const p = problemas[nome];
+  document.querySelectorAll("nav button").forEach((b) => b.classList.toggle("ativo", b.textContent === p.titulo));
+  let html = "";
+  for (const [campo, r] of Object.entries(p.features)) {
+    const entrada = r.tipo === "categoria"
+      ? `<select name="${campo}">${r.opcoes.map((o) => `<option>${o}</option>`).join("")}</select>`
+      : `<input name="${campo}" type="number" step="any" min="${r.min}" max="${r.max}" value="${r.padrao}">`;
+    html += `<label>${campo.replaceAll("_", " ")}${entrada}</label>`;
+  }
+  const formulario = document.getElementById("formulario");
+  formulario.innerHTML = html + "<button>Prever</button>";
+  formulario.onsubmit = prever;
+  document.getElementById("resultado").innerHTML = "Preencha os dados e clique em Prever.";
+  mostrarMetricas(p);
+}
+
+async function prever(evento) {
+  evento.preventDefault();
+  const dados = Object.fromEntries(new FormData(evento.target));
+  const resposta = await fetch(`/api/prever/${atual}`, {
+    method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(dados),
+  });
+  const r = await resposta.json();
+  const p = problemas[atual];
+  let html = `<div class="suave">${p.resultado}</div>`;
+  if (!resposta.ok) html = `<p style="color: var(--ruim)">${r.erro}</p>`;
+  else {
+    const risco = r.probabilidade >= 0.5;
+    const cor = risco ? "var(--ruim)" : "var(--bom)";
+    html += `<div class="valor" style="color:${cor}">${pct(r.probabilidade)}</div>
+      <div class="barra"><span style="width:${r.probabilidade * 100}%"></span></div>
+      <p style="color:${cor}"><b>${risco ? "Previsto: inadimplente" : "Previsto: adimplente"}</b></p>`;
+  }
+  document.getElementById("resultado").innerHTML = html;
+}
+
+function mostrarMetricas(p) {
+  const m = p.metricas;
+  let html = `<p class="suave">Validação cruzada (5 folds) — ${m.metrica}, maior é melhor</p><table>`;
+  for (const [algoritmo, r] of Object.entries(m.validacao_cruzada)) {
+    html += `<tr class="${algoritmo === m.modelo ? "escolhido" : ""}"><td>${algoritmo}</td><td>${fmt(r.media)} ± ${fmt(r.desvio)}</td></tr>`;
+  }
+  const t = m.teste;
+  const teste = { Acurácia: pct(t.acuracia), Precisão: pct(t.precisao), Recall: pct(t.recall), F1: fmt(t.f1), "ROC AUC": fmt(t.roc_auc) };
+  html += `</table><p class="suave">Conjunto de teste — modelo escolhido: <b>${m.modelo}</b></p><table>`;
+  for (const [nome, valor] of Object.entries(teste)) html += `<tr><td>${nome}</td><td>${valor}</td></tr>`;
+  const [[vn, fp], [fn, vp]] = t.matriz_confusao;
+  html += `<tr><td>Matriz de confusão (VN, FP, FN, VP)</td><td>${vn}, ${fp}, ${fn}, ${vp}</td></tr>`;
+  document.getElementById("metricas").innerHTML = html + "</table>";
+}
+
+iniciar();
+</script>
+</body>
+</html>
